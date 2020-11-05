@@ -1,3 +1,16 @@
+# Demo Arweave App
+
+## Goals
+
+- Deploy app to arweave
+- Create a mechanism for storing arbitrary state using SmartWeave (Maybe a simple todo app?)
+- Link a PST from community.xyz
+- Charge an amount of PST for every store TX and then distribute to token holders
+
+Anything else???
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
