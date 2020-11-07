@@ -4,7 +4,7 @@
 
 - Deploy app to arweave
 - Create a mechanism for storing arbitrary state using SmartWeave (Maybe a simple todo app?)
-- Link a PST from community.xyz. Current test community is [here](https://community.xyz/#19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ)
+- Link a PST from community.xyz. Current test community is [here](https://community.xyz/#19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ).
 - Charge an amount of PST for every store TX and then distribute to token holders 
 
 Anything else???
