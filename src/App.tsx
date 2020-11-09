@@ -19,6 +19,7 @@ function App() {
 
 	const contractId = '7fVlsUMHXbkAknVL-ZYW6si8_wDd_6ZAu_tlUpevZb4';
 
+	/* eslint-disable-next-line react-hooks/exhaustive-deps */
 	useEffect(() => {
 		const getTodos = async () => {
 			const result = await readContract(arweave, contractId);
@@ -30,6 +31,7 @@ function App() {
 		}
 	});
 
+	// eslint-disable-next-line no-empty-pattern
 	const TodoList = ({ todos: [] }): ReactElement => (
 		<ul className="todo-list mt-4">
 			{todos.map((t: { name: string; completed: boolean }) =>
@@ -70,9 +72,6 @@ function App() {
 					<TodoList todos={todos} />	
 				</div>
 			</div>
-			<pre>
-				
-			</pre>
 		</div>
 	);
 }
