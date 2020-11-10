@@ -21,7 +21,7 @@ function App() {
 		logging: false,     // Enable network request logging
 	});
 
-	const contractId = 'in1UTxeYw3e4ufAOXDbTtwCULs5anE-ACc4Wf2YU8UU';
+	const contractId = 'AyMOrdUyiI85EH2fJaaHuFonm5kNjFseEmYQzxgPjq8';
 
 	/* eslint-disable-next-line react-hooks/exhaustive-deps */
 	useEffect(() => {

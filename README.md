@@ -3,7 +3,7 @@
 ## Goals
 
 - Deploy app to arweave
-- Create a mechanism for storing arbitrary state using SmartWeave (Maybe a simple todo app?) SmartWeave contract has been deployed to this address `in1UTxeYw3e4ufAOXDbTtwCULs5anE-ACc4Wf2YU8UU`. You can interact with it using the smartweave CLI tool.
+- Create a mechanism for storing arbitrary state using SmartWeave (Maybe a simple todo app?) SmartWeave contract has been deployed to this address `AyMOrdUyiI85EH2fJaaHuFonm5kNjFseEmYQzxgPjq8`. You can interact with it using the smartweave CLI tool.
 - Link a PST from community.xyz. Current test community is [here](https://community.xyz/#19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ).
 - Charge an amount of PST for every store TX and then distribute to token holders 
 

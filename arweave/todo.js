@@ -20,7 +20,7 @@ export function handle(state, action) {
         if (typeof action.input.completed !== 'boolean') {
             throw new ContractError('Must be true or false')
         }
-        if (!state.names[action.input.index]) {
+        if (!state.todos[action.input.index]) {
             throw new ContractError('Todo does not exist')
         }
     
