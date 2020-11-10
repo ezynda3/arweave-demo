@@ -37,7 +37,7 @@ export function handle(state, action) {
             throw new ContractError('Todo does not exist')
         }
 
-        state = state.todos.splice(action.input.index, 1)
+        state.todos.splice(action.input.index, 1)
 
         return { state }
     }
