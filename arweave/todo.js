@@ -33,7 +33,7 @@ export function handle(state, action) {
         if (typeof action.input.index !== 'number') {
             throw new ContractError('Invalid index')
         }
-        if (!state.names[action.input.index]) {
+        if (!state.todos[action.input.index]) {
             throw new ContractError('Todo does not exist')
         }
 

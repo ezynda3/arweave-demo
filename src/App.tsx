@@ -21,7 +21,7 @@ function App() {
 		logging: false,     // Enable network request logging
 	});
 
-	const contractId = 'RFQjB616cnq-UMygVMgk8ToH04B-i7txpWfpBWhkTYM';
+	const contractId = 'in1UTxeYw3e4ufAOXDbTtwCULs5anE-ACc4Wf2YU8UU';
 
 	/* eslint-disable-next-line react-hooks/exhaustive-deps */
 	useEffect(() => {
@@ -75,7 +75,7 @@ function App() {
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
-				{ function: 'delete', index: evt.currentTarget.value }
+				{ function: 'delete', index: parseInt(evt.currentTarget.value) }
 			);
 			console.log('Deleted.')
 			console.log(result)
