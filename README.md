@@ -7,9 +7,10 @@
 - Link a PST from community.xyz. Current test community is [here](https://community.xyz/#19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ).
 - Charge an amount of PST for every store TX and then distribute to token holders 
 
-Anything else???
+## Short-Term Todos
 
-
+- Find a way to subscribe to updated contract states
+- Add a snackbar with txid after each transaction; maybe link to [viewblock](https://viewblock.io/arweave/tx)
 
 # Getting Started with Create React App
 
