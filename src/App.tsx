@@ -21,13 +21,17 @@ function App() {
 		logging: false,     // Enable network request logging
 	});
 
-	const contractId = '7fVlsUMHXbkAknVL-ZYW6si8_wDd_6ZAu_tlUpevZb4';
+	const contractId = 'RFQjB616cnq-UMygVMgk8ToH04B-i7txpWfpBWhkTYM';
 
 	/* eslint-disable-next-line react-hooks/exhaustive-deps */
 	useEffect(() => {
 		const getTodos = async () => {
-			const result = await readContract(arweave, contractId);
-			setTodos(result.todos);
+			try {
+				const result = await readContract(arweave, contractId);
+				setTodos(result.todos);
+			} catch (e) {
+				console.log(e);
+			}
 		};
 		const getAddress = async () => {
 			setAddress(await arweave.wallets.jwkToAddress(wallet! as JWKInterface));
