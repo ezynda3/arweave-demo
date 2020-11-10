@@ -1,9 +1,19 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import Arweave from 'arweave';
+import { readContract, } from 'smartweave';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+const arweave = Arweave.init({
+  host: 'arweave.net',
+  port: 443,
+  protocol: 'https',
+  timeout: 20000,
+  logging: false,
+});
+
+const contractId = 'AyMOrdUyiI85EH2fJaaHuFonm5kNjFseEmYQzxgPjq8';
+
+describe('Todo contract', () => {
+  test('can read contract', async () => {
+      const result = await readContract(arweave, contractId);
+      expect(result.todos).toBeDefined();
+  });
 });
