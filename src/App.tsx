@@ -8,7 +8,7 @@ import { JWKInterface } from 'arweave/node/lib/wallet';
 function App() {
 
 	const [fetchTodos, setFetchTodos] = useState(true);
-	const [todos, setTodos] = useState([]);
+	const [todos, setTodos] = useState<any[]>([]);
 	const [wallet, setWallet] = useState(null);
 	const [address, setAddress] = useState('');
 	const [name, setName] = useState('');
@@ -22,6 +22,12 @@ function App() {
 		logging: false,     // Enable network request logging
 	});
 
+	interface Item {
+		name: string,
+		completed: boolean,
+		pending: boolean,
+	}
+
 	const contractId = 'AyMOrdUyiI85EH2fJaaHuFonm5kNjFseEmYQzxgPjq8';
 
 	/* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -29,8 +35,16 @@ function App() {
 		const getTodos = async () => {
 			try {
 				const result = await readContract(arweave, contractId);
-				setTodos(result.todos);
-				console.log(result)
+				let todos: any[] = [];
+				await result.todos.forEach((item: Item) => {
+					todos.push({
+						name: item.name,
+						completed: item.completed,
+						pending: false,
+					})
+				});
+				setTodos(todos);
+				console.log(todos)
 			} catch (e) {
 				console.log(e);
 			}
@@ -66,37 +80,64 @@ function App() {
 				contractId,
 				{ function: 'create', name: name }
 			);
+
+			// Create a pending todo item
+			let newArray = todos;
+			newArray.push({
+				name: 'New item being added...',
+				completed: false,
+				pending: false,
+			})
+			setTodos(newArray)
 			setName('');
-			subscribeToTransaction(result.toString());
+			console.log(result)
+
+			subscribeToTransaction(result.toString(), 0);
 		}
 	}
 
 	const delTask = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (wallet) {
-			setPending(true)
+			setPending(true);
+			let index = parseInt(evt.currentTarget.value);
+
+			// Change specific todo pending to true
+			let newArray = todos;
+			newArray[index].pending = true;
+			setTodos(newArray);
+
 			console.log('Deleting task...')
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
-				{ function: 'delete', index: parseInt(evt.currentTarget.value) }
+				{ function: 'delete', index: index }
 			);
-			subscribeToTransaction(result.toString());
+			console.log(result)
+			subscribeToTransaction(result.toString(), index);
 		}
 	}
 
-	const subscribeToTransaction = async (transaction: string) => {
+	const subscribeToTransaction = async (transaction: string, index: number) => {
 		arweave.transactions.getStatus(transaction).then(status => {
-			console.log(status.confirmed);
 			if (status.confirmed == null) {
-				setTimeout(() => subscribeToTransaction(transaction), 10000)
+				setTimeout(() => subscribeToTransaction(transaction, index), 10000)
 			} else {
 				const getTodos = async () => {
 					try {
 						const result = await readContract(arweave, contractId);
-						setTodos(result.todos);
+						let todos: any[] = [];
+						await result.todos.forEach((item: Item) => {
+							todos.push({
+								name: item.name,
+								completed: item.completed,
+								pending: false,
+							})
+						});
+						setTodos(todos);
 					} catch (e) {
 					}
 				};
+
 				getTodos();
 				setPending(false)
 				console.log('Transaction confirmed: ', transaction);
@@ -107,21 +148,21 @@ function App() {
 	// eslint-disable-next-line no-empty-pattern
 	const TodoList = ({ todos: [] }): ReactElement => (
 		<ul className="todo-list mt-4">
-			{todos.map((t: { name: string; completed: boolean }, idx: number) =>
+			{todos.map((t: { name: string; completed: boolean, pending: boolean }, idx: number) =>
 				<li className="flex justify-between items-center mt-3" key={idx}>
 					<div className="flex items-center">
 						<input type="checkbox" name="" id="" />
 						<div className="capitalize ml-3 text-xl font-semibold">
-							{t.name}
+							{t.pending ? 'Deleting...' : t.name}
 						</div>
 					</div>
-					<div>
+					{!t.pending && <div>
 						<button onClick={delTask} value={idx}>
 							<svg className="w-10 h-10 text-red-600 fill-current" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
 								<path d="M6 18L18 6M6 6l12 12"></path>
 							</svg>
 						</button>
-					</div>
+					</div>}
 				</li>
 			)}
 		</ul>
