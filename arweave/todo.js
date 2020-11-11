@@ -6,6 +6,7 @@ export function handle(state, action) {
         }
         
         state.todos.push({
+            id: SmartWeave.transaction.id,
             name: action.input.name,
             completed: false
         })
@@ -30,14 +31,15 @@ export function handle(state, action) {
     }
 
     if (action.input.function === 'delete') {
-        if (typeof action.input.index !== 'number') {
-            throw new ContractError('Invalid index')
+        if (typeof action.input.id !== 'string') {
+            throw new ContractError('Invalid ID')
         }
-        if (!state.todos[action.input.index]) {
-            throw new ContractError('Todo does not exist')
+        if (state.todos.find(todo => todo.id === action.input.id) === undefined) {
+            throw new ContractError('No matching ID')
         }
 
-        state.todos.splice(action.input.index, 1)
+        let filteredArray = state.todos.filter(todo => todo.id !== action.input.id)
+        state.todos = filteredArray;
 
         return { state }
     }
