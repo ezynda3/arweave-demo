@@ -73,14 +73,14 @@ function App() {
 
 	const delTask = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (wallet) {
+			setPending(true)
 			console.log('Deleting task...')
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
 				{ function: 'delete', index: parseInt(evt.currentTarget.value) }
 			);
-			console.log('Deleted.')
-			console.log(result)
+			subscribeToTransaction(result.toString());
 		}
 	}
 
