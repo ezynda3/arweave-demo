@@ -12,6 +12,7 @@ function App() {
 	const [wallet, setWallet] = useState(null);
 	const [address, setAddress] = useState('');
 	const [name, setName] = useState('');
+	const [pending, setPending] = useState(false);
 
 	const arweave = Arweave.init({
 		host: 'arweave.net',// Hostname or IP address for a Arweave host
@@ -29,6 +30,7 @@ function App() {
 			try {
 				const result = await readContract(arweave, contractId);
 				setTodos(result.todos);
+				console.log(result)
 			} catch (e) {
 				console.log(e);
 			}
@@ -57,6 +59,7 @@ function App() {
 
 	const addTask = async () => {
 		if (name && wallet) {
+			setPending(true)
 			console.log('Saving task...')
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
@@ -64,8 +67,7 @@ function App() {
 				{ function: 'create', name: name }
 			);
 			setName('');
-			console.log('Saved.')
-			console.log(result)
+			subscribeToTransaction(result.toString());
 		}
 	}
 
@@ -80,6 +82,26 @@ function App() {
 			console.log('Deleted.')
 			console.log(result)
 		}
+	}
+
+	const subscribeToTransaction = async (transaction: string) => {
+		arweave.transactions.getStatus(transaction).then(status => {
+			console.log(status.confirmed);
+			if (status.confirmed == null) {
+				setTimeout(() => subscribeToTransaction(transaction), 10000)
+			} else {
+				const getTodos = async () => {
+					try {
+						const result = await readContract(arweave, contractId);
+						setTodos(result.todos);
+					} catch (e) {
+					}
+				};
+				getTodos();
+				setPending(false)
+				console.log('Transaction confirmed: ', transaction);
+			}
+		})
 	}
 
 	// eslint-disable-next-line no-empty-pattern
@@ -137,6 +159,8 @@ function App() {
 							<TodoList todos={todos} />	
 						</div>
 					</div>
+					<br />
+					{pending && <div>Transaction pending...</div>}
 				</div>
 			}
 		</div>
