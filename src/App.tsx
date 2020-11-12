@@ -22,7 +22,7 @@ function App() {
 		logging: false,     // Enable network request logging
 	});
 
-	interface Item {
+	interface Todos {
 		id: string,
 		name: string,
 		completed: boolean,
@@ -35,7 +35,7 @@ function App() {
 		try {
 			const result = await readContract(arweave, contractId);
 			let todos: any[] = [];
-			await result.todos.forEach((item: Item) => {
+			await result.todos.forEach((item: Todos) => {
 				todos.push({
 					id: item.id,
 					name: item.name,
@@ -43,7 +43,14 @@ function App() {
 					pending: false,
 				})
 			});
+			
 			setTodos(todos);
+			
+			if (JSON.stringify(todos) !== sessionStorage.getItem('Todos')) {
+				const pendingTodos = setPendingStatus(sessionStorage.getItem('Todos'), todos)
+				sessionStorage.removeItem('Todos')
+				sessionStorage.setItem('Todos', JSON.stringify(pendingTodos))
+			}
 			console.log(todos);
 		} catch (e) {
 			console.log(e);
@@ -63,6 +70,27 @@ function App() {
 			getAddress();
 		}
 	});
+
+	const setPendingStatus = (sessionTodos: string | null, todos: any[]) => {
+		if (sessionTodos !== null) {
+			let parsedTodos = JSON.parse(sessionTodos)
+			let newTodos = []
+
+			for (let i=0; i < parsedTodos.length; i++) {
+				if ((todos.find(todo => todo.id === parsedTodos[i].id) !== undefined)) {
+					newTodos.push(parsedTodos[i])
+				}
+			}
+			
+			for (let i=0; i < todos.length; i++) {
+				if ((parsedTodos.find((todo: { id: any; }) => todo.id === todos[i].id) === undefined)) {
+					newTodos.push(todos[i])
+				}
+			}
+
+			return newTodos
+		}
+	}
 
 	const uploadWallet = (evt: React.ChangeEvent<HTMLInputElement>) => {
 		const fileReader = new FileReader();
