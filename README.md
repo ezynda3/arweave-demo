@@ -2,15 +2,10 @@
 
 ## Goals
 
-- Deploy app to arweave
-- Create a mechanism for storing arbitrary state using SmartWeave (Maybe a simple todo app?) SmartWeave contract has been deployed to this address `5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A`. You can interact with it using the smartweave CLI tool.
-- Link a PST from community.xyz. Current test community is [here](https://community.xyz/#19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ).
-- Charge an amount of PST for every store TX and then distribute to token holders 
-
-## Short-Term Todos
-
-- Find a way to subscribe to updated contract states
-- Add a snackbar with txid after each transaction; maybe link to [viewblock](https://viewblock.io/arweave/tx)
+- [] Deploy app to arweave
+- [x] Create a mechanism for storing arbitrary state using SmartWeave (Maybe a simple todo app?) SmartWeave contract has been deployed to this address `5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A`. You can interact with it using the smartweave CLI tool.
+- [] Link a PST from community.xyz. Current test community is [here](https://community.xyz/#19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ).
+- [] Charge an amount of PST for every store TX and then distribute to token holders 
 
 # Getting Started with Create React App
 

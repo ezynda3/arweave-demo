@@ -34,7 +34,6 @@ function App() {
 	const tokenId = '19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ'
 
 	const getTodos = async () => {
-		console.log('Getting Todos')
 		try {
 			const result = await readContract(arweave, contractId);
 			let newTodos: any[] = [];
@@ -54,11 +53,30 @@ function App() {
 
 			if (JSON.stringify(newTodos) !== sessionStorage.getItem('Todos')) {
 				const pendingTodos = setPendingStatus(sessionStorage.getItem('Todos'), newTodos)
-				console.log(pendingTodos)
 				sessionStorage.removeItem('Todos')
 				sessionStorage.setItem('Todos', JSON.stringify(pendingTodos));
+
 				if (pendingTodos !== undefined) {
+					setPending(true);
 					setTodos(pendingTodos)
+					for (let i=0; i < pendingTodos.length; i++) {
+						if (pendingTodos[i].adding === true || pendingTodos[i].deleting === true) {
+							if (pendingTodos[i].tx !== undefined) {
+								return subscribeToTransaction(pendingTodos[i].tx)
+							} else {
+								return subscribeToTransaction(pendingTodos[i].id)
+							}
+						}
+					}
+					for (let i=0; i < pendingTodos.length; i++) {
+						if (pendingTodos[i].adding !== true && pendingTodos[i].deleting !== true) {
+							return setPending(false);
+						}
+					}
+
+					if (pendingTodos.length === 0) {
+						return setPending(false);
+					}
 				}
 			} else {
 				setTodos(newTodos);
@@ -91,7 +109,6 @@ function App() {
 			for (let i=0; i < parsedTodos.length; i++) {
 				if ((todos.find(todo => todo.id === parsedTodos[i].id)) !== undefined || parsedTodos[i].adding === true) {
 					if (todos.find(todo => todo.id === parsedTodos[i].id) !== undefined) {
-						console.log(todos)
 						if (todos.find(todo => todo.id === parsedTodos[i].id).adding !== parsedTodos[i].adding) {
 							parsedTodos[i].adding = false
 							parsedTodos[i].name = todos.find(todo => todo.id === parsedTodos[i].id).name
@@ -107,8 +124,6 @@ function App() {
 					newTodos.push(todos[i])
 				}
 			}
-
-			console.log(newTodos);
 			return newTodos
 		}
 	}
@@ -151,13 +166,12 @@ function App() {
 				name: `Adding '${name}'...`,
 				completed: false,
 				adding: true,
+				deleting: false,
 			})
 			sessionStorage.removeItem('Todos');
 			sessionStorage.setItem('Todos', JSON.stringify(newArray));
 			getTodos();
 			setName('');
-
-			subscribeToTransaction(result.toString(), 0);
 		}
 	}
 
@@ -172,28 +186,25 @@ function App() {
 				contractId,
 				{ function: 'delete', id }
 			);
-			console.log(result)
 
 			let newArray = todos;
 			newArray.find(todo => todo.id === id).name = 'Deleting...';
 			newArray.find(todo => todo.id === id).deleting = true;
+			newArray.find(todo => todo.id === id).tx = result;
 			console.log(newArray)
 
 			sessionStorage.removeItem('Todos');
 			sessionStorage.setItem('Todos', JSON.stringify(newArray));
 			getTodos();
-
-			// subscribeToTransaction(result.toString(), index);
 		}
 	}
 
-	const subscribeToTransaction = async (transaction: string, index: number) => {
+	const subscribeToTransaction = async (transaction: string) => {
 		arweave.transactions.getStatus(transaction).then(status => {
 			if (status.confirmed == null) {
-				setTimeout(() => subscribeToTransaction(transaction, index), 10000)
+				setTimeout(() => subscribeToTransaction(transaction), 10000);
 			} else {
 				getTodos();
-				setPending(false)
 				console.log('Transaction confirmed: ', transaction);
 			}
 		})
@@ -210,7 +221,7 @@ function App() {
 							{t.name}
 						</div>
 					</div>
-					{(!t.adding || !t.deleting) && <div>
+					{(!t.adding && !t.deleting) && <div>
 						<button onClick={delTask} value={t.id}>
 							<svg className="w-10 h-10 text-red-600 fill-current" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
 								<path d="M6 18L18 6M6 6l12 12"></path>
@@ -255,7 +266,7 @@ function App() {
 						</div>
 					</div>
 					<br />
-					{pending && <div>Transaction pending...</div>}
+					{pending && <div>Transactions pending...</div>}
 				</div>
 			}
 		</div>
