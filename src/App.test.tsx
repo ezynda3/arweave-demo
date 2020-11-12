@@ -9,7 +9,7 @@ const arweave = Arweave.init({
   logging: false,
 });
 
-const contractId = 'AyMOrdUyiI85EH2fJaaHuFonm5kNjFseEmYQzxgPjq8';
+const contractId = '5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A';
 
 describe('Todo contract', () => {
   test('can read contract', async () => {

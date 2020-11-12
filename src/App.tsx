@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import Arweave from 'arweave';
-import { readContract, smartweave } from 'smartweave';
+import { readContract, smartweave, selectWeightedPstHolder } from 'smartweave';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 import './tailwind.output.css';
 import './App.css';
@@ -30,6 +30,7 @@ function App() {
 	}
 
 	const contractId = '5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A'
+	const tokenId = '19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ'
 
 	const getTodos = async () => {
 		try {
@@ -102,10 +103,22 @@ function App() {
 		}
 	}
 
+	const sendTip = async () => {
+		const { balances } = await readContract(arweave, tokenId)
+		console.log(balances)
+		const holder = selectWeightedPstHolder(balances)
+		console.log(holder)
+		const tx = await arweave.createTransaction({ target: holder, quantity: arweave.ar.arToWinston('0.001') }, wallet! as JWKInterface)
+		await arweave.transactions.sign(tx, wallet! as JWKInterface)
+		const result = await arweave.transactions.post(tx)
+		console.log(result)
+	}
+
 	const addTask = async () => {
 		if (name && wallet) {
 			setPending(true)
 			console.log('Saving task...')
+			await sendTip();
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
@@ -121,8 +134,8 @@ function App() {
 			})
 			setTodos(newArray)
 			setName('');
+			
 			console.log(result)
-
 			subscribeToTransaction(result.toString(), 0);
 		}
 	}
@@ -130,12 +143,13 @@ function App() {
 	const delTask = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (wallet) {
 			setPending(true);
-
 			console.log('Deleting task...')
+			const id = evt.currentTarget.value
+			await sendTip();
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
-				{ function: 'delete', id: evt.currentTarget.value }
+				{ function: 'delete', id }
 			);
 			console.log(result)
 			// subscribeToTransaction(result.toString(), index);
