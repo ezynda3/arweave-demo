@@ -27,12 +27,14 @@ function App() {
 		name: string,
 		completed: boolean,
 		adding: boolean,
+		deleting: boolean,
 	}
 
 	const contractId = '5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A'
 	const tokenId = '19tBk-g7euaGOJbT62BAIZqcxrUkraQ82d-3eqDHFzQ'
 
 	const getTodos = async () => {
+		console.log('Getting Todos')
 		try {
 			const result = await readContract(arweave, contractId);
 			let newTodos: any[] = [];
@@ -42,21 +44,25 @@ function App() {
 					name: item.name,
 					completed: item.completed,
 					adding: false,
+					deleting: false,
 				})
 			});
-			
-			setTodos(newTodos);
 
-			if (JSON.stringify(todos) !== sessionStorage.getItem('Todos')) {
-				const pendingTodos = setPendingStatus(sessionStorage.getItem('Todos'), todos)
+			if (!sessionStorage.getItem('Todos')) {
+				sessionStorage.setItem('Todos', JSON.stringify(newTodos));
+			}
+
+			if (JSON.stringify(newTodos) !== sessionStorage.getItem('Todos')) {
+				const pendingTodos = setPendingStatus(sessionStorage.getItem('Todos'), newTodos)
 				console.log(pendingTodos)
 				sessionStorage.removeItem('Todos')
 				sessionStorage.setItem('Todos', JSON.stringify(pendingTodos));
 				if (pendingTodos !== undefined) {
 					setTodos(pendingTodos)
 				}
+			} else {
+				setTodos(newTodos);
 			}
-			console.log(todos);
 		} catch (e) {
 			console.log(e);
 		}
@@ -79,11 +85,13 @@ function App() {
 	const setPendingStatus = (sessionTodos: string | null, todos: any[]) => {
 		if (sessionTodos !== null) {
 			let parsedTodos = JSON.parse(sessionTodos)
+
 			let newTodos = []
 
 			for (let i=0; i < parsedTodos.length; i++) {
 				if ((todos.find(todo => todo.id === parsedTodos[i].id)) !== undefined || parsedTodos[i].adding === true) {
 					if (todos.find(todo => todo.id === parsedTodos[i].id) !== undefined) {
+						console.log(todos)
 						if (todos.find(todo => todo.id === parsedTodos[i].id).adding !== parsedTodos[i].adding) {
 							parsedTodos[i].adding = false
 							parsedTodos[i].name = todos.find(todo => todo.id === parsedTodos[i].id).name
@@ -148,7 +156,6 @@ function App() {
 			sessionStorage.setItem('Todos', JSON.stringify(newArray));
 			getTodos();
 			setName('');
-			console.log(result);
 
 			subscribeToTransaction(result.toString(), 0);
 		}
@@ -169,11 +176,12 @@ function App() {
 
 			let newArray = todos;
 			newArray.find(todo => todo.id === id).name = 'Deleting...';
-			newArray.find(todo => todo.id === id).adding = true;
+			newArray.find(todo => todo.id === id).deleting = true;
 			console.log(newArray)
 
 			sessionStorage.removeItem('Todos');
 			sessionStorage.setItem('Todos', JSON.stringify(newArray));
+			getTodos();
 
 			// subscribeToTransaction(result.toString(), index);
 		}
@@ -194,7 +202,7 @@ function App() {
 	// eslint-disable-next-line no-empty-pattern
 	const TodoList = ({ todos: [] }): ReactElement => (
 		<ul className="todo-list mt-4">
-			{todos.map((t: { id: string, name: string; completed: boolean, adding: boolean },  index: number) =>
+			{todos.map((t: { id: string, name: string; completed: boolean, adding: boolean, deleting: boolean },  index: number) =>
 				<li className="flex justify-between items-center mt-3" key={index}>
 					<div className="flex items-center">
 						<input type="checkbox" name="" id="" />
@@ -202,7 +210,7 @@ function App() {
 							{t.name}
 						</div>
 					</div>
-					{!t.adding && <div>
+					{(!t.adding || !t.deleting) && <div>
 						<button onClick={delTask} value={t.id}>
 							<svg className="w-10 h-10 text-red-600 fill-current" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
 								<path d="M6 18L18 6M6 6l12 12"></path>
