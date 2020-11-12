@@ -1,9 +1,9 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import './tailwind.output.css';
-import './App.css';
 import Arweave from 'arweave';
 import { readContract, smartweave } from 'smartweave';
 import { JWKInterface } from 'arweave/node/lib/wallet';
+import './tailwind.output.css';
+import './App.css';
 
 function App() {
 
@@ -23,32 +23,35 @@ function App() {
 	});
 
 	interface Item {
+		id: string,
 		name: string,
 		completed: boolean,
 		pending: boolean,
 	}
 
-	const contractId = 'AyMOrdUyiI85EH2fJaaHuFonm5kNjFseEmYQzxgPjq8';
+	const contractId = '5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A'
+
+	const getTodos = async () => {
+		try {
+			const result = await readContract(arweave, contractId);
+			let todos: any[] = [];
+			await result.todos.forEach((item: Item) => {
+				todos.push({
+					id: item.id,
+					name: item.name,
+					completed: item.completed,
+					pending: false,
+				})
+			});
+			setTodos(todos);
+			console.log(todos);
+		} catch (e) {
+			console.log(e);
+		}
+	};
 
 	/* eslint-disable-next-line react-hooks/exhaustive-deps */
 	useEffect(() => {
-		const getTodos = async () => {
-			try {
-				const result = await readContract(arweave, contractId);
-				let todos: any[] = [];
-				await result.todos.forEach((item: Item) => {
-					todos.push({
-						name: item.name,
-						completed: item.completed,
-						pending: false,
-					})
-				});
-				setTodos(todos);
-				console.log(todos)
-			} catch (e) {
-				console.log(e);
-			}
-		};
 		const getAddress = async () => {
 			setAddress(await arweave.wallets.jwkToAddress(wallet! as JWKInterface));
 		}
@@ -99,21 +102,15 @@ function App() {
 	const delTask = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (wallet) {
 			setPending(true);
-			let index = parseInt(evt.currentTarget.value);
-
-			// Change specific todo pending to true
-			let newArray = todos;
-			newArray[index].pending = true;
-			setTodos(newArray);
 
 			console.log('Deleting task...')
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
-				{ function: 'delete', index: index }
+				{ function: 'delete', id: evt.currentTarget.value }
 			);
 			console.log(result)
-			subscribeToTransaction(result.toString(), index);
+			// subscribeToTransaction(result.toString(), index);
 		}
 	}
 
@@ -122,22 +119,6 @@ function App() {
 			if (status.confirmed == null) {
 				setTimeout(() => subscribeToTransaction(transaction, index), 10000)
 			} else {
-				const getTodos = async () => {
-					try {
-						const result = await readContract(arweave, contractId);
-						let todos: any[] = [];
-						await result.todos.forEach((item: Item) => {
-							todos.push({
-								name: item.name,
-								completed: item.completed,
-								pending: false,
-							})
-						});
-						setTodos(todos);
-					} catch (e) {
-					}
-				};
-
 				getTodos();
 				setPending(false)
 				console.log('Transaction confirmed: ', transaction);
@@ -148,8 +129,8 @@ function App() {
 	// eslint-disable-next-line no-empty-pattern
 	const TodoList = ({ todos: [] }): ReactElement => (
 		<ul className="todo-list mt-4">
-			{todos.map((t: { name: string; completed: boolean, pending: boolean }, idx: number) =>
-				<li className="flex justify-between items-center mt-3" key={idx}>
+			{todos.map((t: { id: string, name: string; completed: boolean, pending: boolean },  index: number) =>
+				<li className="flex justify-between items-center mt-3" key={index}>
 					<div className="flex items-center">
 						<input type="checkbox" name="" id="" />
 						<div className="capitalize ml-3 text-xl font-semibold">
@@ -157,7 +138,7 @@ function App() {
 						</div>
 					</div>
 					{!t.pending && <div>
-						<button onClick={delTask} value={idx}>
+						<button onClick={delTask} value={t.id}>
 							<svg className="w-10 h-10 text-red-600 fill-current" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
 								<path d="M6 18L18 6M6 6l12 12"></path>
 							</svg>
