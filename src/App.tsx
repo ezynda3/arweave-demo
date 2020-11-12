@@ -26,7 +26,7 @@ function App() {
 		id: string,
 		name: string,
 		completed: boolean,
-		pending: boolean,
+		adding: boolean,
 	}
 
 	const contractId = '5NgGX4OToJ4M5ohWP4yxaTz_2oPsnk7vmR0v3mqXi_A'
@@ -40,16 +40,20 @@ function App() {
 					id: item.id,
 					name: item.name,
 					completed: item.completed,
-					pending: false,
+					adding: false,
 				})
 			});
 			
 			setTodos(todos);
-			
+
 			if (JSON.stringify(todos) !== sessionStorage.getItem('Todos')) {
 				const pendingTodos = setPendingStatus(sessionStorage.getItem('Todos'), todos)
+				console.log(pendingTodos)
 				sessionStorage.removeItem('Todos')
-				sessionStorage.setItem('Todos', JSON.stringify(pendingTodos))
+				sessionStorage.setItem('Todos', JSON.stringify(pendingTodos));
+				if (pendingTodos !== undefined) {
+					setTodos(pendingTodos)
+				}
 			}
 			console.log(todos);
 		} catch (e) {
@@ -77,7 +81,14 @@ function App() {
 			let newTodos = []
 
 			for (let i=0; i < parsedTodos.length; i++) {
-				if ((todos.find(todo => todo.id === parsedTodos[i].id) !== undefined)) {
+				if ((todos.find(todo => todo.id === parsedTodos[i].id)) !== undefined || parsedTodos[i].adding === true) {
+					if (todos.find(todo => todo.id === parsedTodos[i].id) !== undefined) {
+						if (todos.find(todo => todo.id === parsedTodos[i].id).adding !== parsedTodos[i].adding) {
+							parsedTodos[i].adding = false
+							parsedTodos[i].name = todos.find(todo => todo.id === parsedTodos[i].id).name
+						}
+					}
+					
 					newTodos.push(parsedTodos[i])
 				}
 			}
@@ -88,6 +99,7 @@ function App() {
 				}
 			}
 
+			console.log(newTodos);
 			return newTodos
 		}
 	}
@@ -112,22 +124,25 @@ function App() {
 				{ function: 'create', name: name }
 			);
 
-			// Create a pending todo item
 			let newArray = todos;
 			newArray.push({
-				name: 'New item being added...',
+				id: result,
+				name: `Adding '${name}'...`,
 				completed: false,
-				pending: false,
+				adding: true,
 			})
-			setTodos(newArray)
+			sessionStorage.removeItem('Todos');
+			sessionStorage.setItem('Todos', JSON.stringify(newArray));
+			getTodos();
 			setName('');
-			console.log(result)
+			console.log(result);
 
 			subscribeToTransaction(result.toString(), 0);
 		}
 	}
 
 	const delTask = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+		const id = evt.currentTarget.value;
 		if (wallet) {
 			setPending(true);
 
@@ -135,9 +150,18 @@ function App() {
 			const result = await smartweave.interactWrite(
 				arweave, wallet! as JWKInterface,
 				contractId,
-				{ function: 'delete', id: evt.currentTarget.value }
+				{ function: 'delete', id: id }
 			);
 			console.log(result)
+
+			let newArray = todos;
+			newArray.find(todo => todo.id === id).name = 'Deleting...';
+			newArray.find(todo => todo.id === id).adding = true;
+			console.log(newArray)
+
+			sessionStorage.removeItem('Todos');
+			sessionStorage.setItem('Todos', JSON.stringify(newArray));
+
 			// subscribeToTransaction(result.toString(), index);
 		}
 	}
@@ -157,15 +181,15 @@ function App() {
 	// eslint-disable-next-line no-empty-pattern
 	const TodoList = ({ todos: [] }): ReactElement => (
 		<ul className="todo-list mt-4">
-			{todos.map((t: { id: string, name: string; completed: boolean, pending: boolean },  index: number) =>
+			{todos.map((t: { id: string, name: string; completed: boolean, adding: boolean },  index: number) =>
 				<li className="flex justify-between items-center mt-3" key={index}>
 					<div className="flex items-center">
 						<input type="checkbox" name="" id="" />
 						<div className="capitalize ml-3 text-xl font-semibold">
-							{t.pending ? 'Deleting...' : t.name}
+							{t.name}
 						</div>
 					</div>
-					{!t.pending && <div>
+					{!t.adding && <div>
 						<button onClick={delTask} value={t.id}>
 							<svg className="w-10 h-10 text-red-600 fill-current" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
 								<path d="M6 18L18 6M6 6l12 12"></path>
